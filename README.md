@@ -74,21 +74,21 @@ The protocol would allow currency units to be specified in a similar way.
 ```javascript
 let locale = /* an Intl.Locale, a string, or a list of these */;
 let currency = /* a string consisting of 3 upper-case ASCII letters */;
-let number = /* a Number, a BigInt, or a string */;
+let value = /* a Number, a BigInt, or a string */;
 
 // Today:
 let formatter = new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
 });
-let result = formatter.format(number);
+let result = formatter.format(value);
 
 // With the protocol:
 let formatter = new Intl.NumberFormat(locale, {
     style: "currency",
 });
 let result = formatter.format({
-    number,
+    value,
     unit: currency,
 });
 ```
