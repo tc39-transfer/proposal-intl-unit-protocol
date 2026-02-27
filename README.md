@@ -1,6 +1,6 @@
 # TC39 Intl Unit Protocol
 
-Status: Stage 0
+Status: Stage 1
 
 Champion: Shane F Carr (Google i18n)
 
@@ -20,7 +20,7 @@ formatter.format({
 
 A number annotated with a unit is the only data type required for MessageFormat 2.0 that does not have an analog in JavaScript. See: [List of functions in MessageFormat 2.0](https://github.com/unicode-org/message-format-wg/blob/main/spec/functions/README.md).
 
-Adding a new primordial, such as [Amount](https://github.com/tc39/proposal-amount), would solve this problem and multiple others impacting i18n, but it comes at a cost. As a starting point, we should explore solutions that would allow third-party polyfills and MessageFormat libraries to implement an Amount-like object, which is also something the TC39 committee wants to see as part of an Amount proposal.
+Adding a new primordial, such as [Amount](https://github.com/tc39/proposal-amount), would solve this problem and multiple others impacting i18n. A key question is how Amount interfaces with Intl and how third-party libraries can implement an Amount-like object. The champions believe that this is a sufficiently different problem space that they are pursuing Intl Unit Protocol as a standalone proposal.
 
 ## Proposed Solution
 
@@ -31,7 +31,7 @@ Given these inputs:
 ```javascript
 let locale = /* an Intl.Locale, a string, or a list of these */;
 let unit = /* a string */;
-let number = /* a Number, a BigInt, or a string */;
+let value = /* a Number, a BigInt, or a string */;
 ```
 
 The user can currently write:
@@ -41,7 +41,7 @@ let formatter = new Intl.NumberFormat(locale, {
     style: "unit",
     unit,
 });
-let result = formatter.format(number);
+let result = formatter.format(value);
 ```
 
 With a protocol, the user can instead write:
@@ -51,7 +51,7 @@ let formatter = new Intl.NumberFormat(locale, {
     style: "unit",
 });
 let result = formatter.format({
-    number,
+    value,
     unit,
 });
 ```
@@ -73,7 +73,7 @@ The protocol would allow currency units to be specified in a similar way.
 
 ```javascript
 let locale = /* an Intl.Locale, a string, or a list of these */;
-let currency = /* a string */;
+let currency = /* a string consisting of 3 upper-case ASCII letters */;
 let number = /* a Number, a BigInt, or a string */;
 
 // Today:
@@ -89,7 +89,7 @@ let formatter = new Intl.NumberFormat(locale, {
 });
 let result = formatter.format({
     number,
-    currency,  // or unit: currency? (to be discussed)
+    unit: currency,
 });
 ```
 
@@ -106,6 +106,8 @@ new Intl.NumberFormat("en", {
     unit: "kilometer",
 }) // throws a RangeError
 ```
+
+When the Amount proposal advances, this can be changed to automatically convert the input unit to the formatter unit.
 
 ## Integration with Future Proposals
 
