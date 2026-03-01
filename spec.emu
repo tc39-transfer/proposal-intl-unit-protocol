@@ -4,36 +4,473 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: Proposal Title Goes Here
-stage: -1
-contributors: Your Name(s) Here
+title: Proposal Intl Unit Protocol
+stage: 1
+contributors: Shane F Carr
 </pre>
 
-<emu-clause id="sec-demo-clause">
-  <h1>This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
-  <emu-alg>
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*<sub>ℤ</sub>.
-    1. Else,
-      1. Let _stage_ be *-1*<sub>ℤ</sub>.
-    1. Return ? ToString(_stage_).
-  </emu-alg>
-</emu-clause>
+<emu-clause id="numberformat-objects">
+  <h1>NumberFormat Objects</h1>
+  <emu-clause id="sec-properties-of-intl-numberformat-prototype-object">
+    <h1>Properties of the Intl.NumberFormat Prototype Object</h1>
 
-<emu-clause id="sec-is-accepted" type="abstract operation">
-  <h1>
-      IsAccepted (
-        _proposal_: an ECMAScript language value
-      ): a Boolean
-  </h1>
-  <dl class="header">
-    <dt>description</dt>
-    <dd>Tells you if the proposal was accepted</dd>
-  </dl>
-  <emu-alg>
-    1. If _proposal_ is not a String, or is not accepted, return *false*.
-    1. Return *true*.
-  </emu-alg>
+    <emu-clause id="sec-intl.numberformat.prototype.formatrange">
+      <h1>Intl.NumberFormat.prototype.formatRange ( _start_, _end_ )</h1>
+
+      <p>When the `formatRange` method is called with arguments _start_ and _end_, the following steps are taken:</p>
+
+      <emu-alg>
+        1. Let _nf_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_nf_, [[InitializedNumberFormat]]).
+        1. If _start_ is *undefined* or _end_ is *undefined*, throw a *TypeError* exception.
+        1. Let _x_ be ? <del>ToIntlMathematicalValue</del><ins>GetNumberFormatInput</ins>(<ins>_nf_,</ins> _start_).
+        1. Let _y_ be ? <del>ToIntlMathematicalValue</del><ins>GetNumberFormatInput</ins>(<ins>_nf_,</ins> _end_).
+        1. <ins>If _x_.[[Unit]] != _y_.[[Unit]], throw a *RangeError* exception.</ins>
+        1. Return ? FormatNumericRange(_nf_, _x_<ins>.[[Value]]</ins>, _y_<ins>.[[Value]], _x_.[[Unit]]</ins>).
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-intl.numberformat.prototype.formatrangetoparts">
+      <h1>Intl.NumberFormat.prototype.formatRangeToParts ( _start_, _end_ )</h1>
+
+      <p>When the `formatRangeToParts` method is called with arguments _start_ and _end_, the following steps are taken:</p>
+
+      <emu-alg>
+        1. Let _nf_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_nf_, [[InitializedNumberFormat]]).
+        1. If _start_ is *undefined* or _end_ is *undefined*, throw a *TypeError* exception.
+        1. Let _x_ be ? <del>ToIntlMathematicalValue</del><ins>GetNumberFormatInput</ins>(<ins>_nf_,</ins> _start_).
+        1. Let _y_ be ? <del>ToIntlMathematicalValue</del><ins>GetNumberFormatInput</ins>(<ins>_nf_,</ins> _end_).
+        1. <ins>If _x_.[[Unit]] != _y_.[[Unit]], throw a *RangeError* exception.</ins>
+        1. Return ? FormatNumericRangeToParts(_nf_, _x_<ins>.[[Value]]</ins>, _y_<ins>.[[Value]], _x_.[[Unit]]</ins>).
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-intl.numberformat.prototype.formattoparts">
+      <h1>Intl.NumberFormat.prototype.formatToParts ( _value_ )</h1>
+
+      <p>When the `formatToParts` method is called with an optional argument _value_, the following steps are taken:</p>
+
+      <emu-alg>
+        1. Let _nf_ be the *this* value.
+        1. Perform ? RequireInternalSlot(_nf_, [[InitializedNumberFormat]]).
+        1. Let _x_ be ? <del>ToIntlMathematicalValue</del><ins>GetNumberFormatInput</ins>(<ins>_nf_,</ins> _value_).</del>
+        1. Return FormatNumericToParts(_nf_, _x_<ins>.[[Value]], _x_.[[Unit]]</ins>).
+      </emu-alg>
+    </emu-clause>
+  </emu-clause>
+
+  <emu-clause id="sec-numberformat-abstracts">
+    <h1>Abstract Operations for NumberFormat Objects</h1>
+
+    <emu-clause id="sec-number-format-functions">
+      <h1>Number Format Functions</h1>
+
+      <p>A Number format function is an anonymous built-in function that has a [[NumberFormat]] internal slot.</p>
+      <p>When a Number format function _F_ is called with optional argument _value_, the following steps are taken:</p>
+
+      <emu-alg>
+        1. Let _nf_ be _F_.[[NumberFormat]].
+        1. Assert: _nf_ is an Object and _nf_ has an [[InitializedNumberFormat]] internal slot.
+        1. If _value_ is not provided, let _value_ be *undefined*.
+        1. <del>Let _x_ be ? ToIntlMathematicalValue(_value_).</del>
+        1. <ins>Let _inputRecord_ be ? GetNumberFormatInput(_nf_, _value_).</ins>
+        1. Return FormatNumeric(_nf_, <del>_x_</del> <ins>_inputRecord_.[[Value]], _inputRecord_.[[Unit]]</ins>).
+      </emu-alg>
+
+      <p>The *"length"* property of a Number format function is *1*<sub>𝔽</sub>.</p>
+    </emu-clause>
+
+    <emu-clause id="sec-formatnumber" type="abstract operation">
+      <h1>
+        FormatNumeric (
+          _numberFormat_: an Intl.NumberFormat,
+          _x_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): a String
+      </h1>
+      <dl class="header">
+      </dl>
+      <emu-alg>
+        1. Let _parts_ be PartitionNumberPattern(_numberFormat_, _x_ <ins>, _unit_</ins>).
+        1. Let _result_ be the empty String.
+        1. For each Record { [[Type]], [[Value]] } _part_ of _parts_, do
+          1. Set _result_ to the string-concatenation of _result_ and _part_.[[Value]].
+        1. Return _result_.
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-formatnumbertoparts" type="abstract operation">
+      <h1>
+        FormatNumericToParts (
+          _numberFormat_: an Intl.NumberFormat,
+          _x_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): an Array
+      </h1>
+      <dl class="header">
+      </dl>
+      <emu-alg>
+        1. Let _parts_ be PartitionNumberPattern(_numberFormat_, _x_ <ins>, _unit_</ins>).
+        1. Let _result_ be ! ArrayCreate(0).
+        1. Let _n_ be 0.
+        1. For each Record { [[Type]], [[Value]] } _part_ of _parts_, do
+          1. Let _O_ be OrdinaryObjectCreate(%Object.prototype%).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"type"*, _part_.[[Type]]).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"value"*, _part_.[[Value]]).
+          1. Perform ! CreateDataPropertyOrThrow(_result_, ! ToString(𝔽(_n_)), _O_).
+          1. Increment _n_ by 1.
+        1. Return _result_.
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-partitionnumberpattern" type="abstract operation">
+      <h1>
+        PartitionNumberPattern (
+          _numberFormat_: an object initialized as a NumberFormat,
+          _x_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): a List of Records with fields [[Type]] (a String) and [[Value]] (a String)
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It creates the parts representing the mathematical value of _x_ according to the effective locale and the formatting options of _numberFormat_. <ins>_unit_ must not be *undefined* if the style is *"unit"* or *"currency"*, and it must be *undefined* otherwise.</ins></dd>
+      </dl>
+
+      <emu-alg>
+        1. Let _exponent_ be 0.
+        1. If _x_ is ~not-a-number~, then
+          1. Let _n_ be an ILD String value indicating the *NaN* value.
+        1. Else if _x_ is ~positive-infinity~, then
+          1. Let _n_ be an ILD String value indicating positive infinity.
+        1. Else if _x_ is ~negative-infinity~, then
+          1. Let _n_ be an ILD String value indicating negative infinity.
+        1. Else,
+          1. If _x_ is not ~negative-zero~, then
+            1. Assert: _x_ is a mathematical value.
+            1. If _numberFormat_.[[Style]] is *"percent"*, set _x_ be 100 × _x_.
+            1. Set _exponent_ to ComputeExponent(_numberFormat_, _x_).
+            1. Set _x_ to _x_ × 10<sup>-_exponent_</sup>.
+          1. Let _formatNumberResult_ be FormatNumericToString(_numberFormat_, _x_).
+          1. Let _n_ be _formatNumberResult_.[[FormattedString]].
+          1. Set _x_ to _formatNumberResult_.[[RoundedNumber]].
+        1. Let _pattern_ be GetNumberFormatPattern(_numberFormat_, _x_ <ins>, _unit_</ins>).
+        1. Let _result_ be a new empty List.
+        1. Let _patternParts_ be PartitionPattern(_pattern_).
+        1. For each Record { [[Type]], [[Value]] } _patternPart_ of _patternParts_, do
+          1. Let _p_ be _patternPart_.[[Type]].
+          1. If _p_ is *"literal"*, then
+            1. Append the Record { [[Type]]: *"literal"*, [[Value]]: _patternPart_.[[Value]] } to _result_.
+          1. Else if _p_ is *"number"*, then
+            1. Let _notationSubParts_ be PartitionNotationSubPattern(_numberFormat_, _x_, _n_, _exponent_).
+            1. Set _result_ to the list-concatenation of _result_ and _notationSubParts_.
+          1. Else if _p_ is *"plusSign"*, then
+            1. Let _plusSignSymbol_ be the ILND String representing the plus sign.
+            1. Append the Record { [[Type]]: *"plusSign"*, [[Value]]: _plusSignSymbol_ } to _result_.
+          1. Else if _p_ is *"minusSign"*, then
+            1. Let _minusSignSymbol_ be the ILND String representing the minus sign.
+            1. Append the Record { [[Type]]: *"minusSign"*, [[Value]]: _minusSignSymbol_ } to _result_.
+          1. Else if _p_ is *"percentSign"* and _numberFormat_.[[Style]] is *"percent"*, then
+            1. Let _percentSignSymbol_ be the ILND String representing the percent sign.
+            1. Append the Record { [[Type]]: *"percentSign"*, [[Value]]: _percentSignSymbol_ } to _result_.
+          1. Else if _p_ is *"unitPrefix"* and _numberFormat_.[[Style]] is *"unit"*, then
+            1. Let _unit_ be _numberFormat_.[[Unit]].
+            1. Let _unitDisplay_ be _numberFormat_.[[UnitDisplay]].
+            1. Let _mu_ be an ILD String value representing _unit_ before _x_ in _unitDisplay_ form, which may depend on _x_ in languages having different plural forms.
+            1. Append the Record { [[Type]]: *"unit"*, [[Value]]: _mu_ } to _result_.
+          1. Else if _p_ is *"unitSuffix"* and _numberFormat_.[[Style]] is *"unit"*, then
+            1. Let _unit_ be _numberFormat_.[[Unit]].
+            1. Let _unitDisplay_ be _numberFormat_.[[UnitDisplay]].
+            1. Let _mu_ be an ILD String value representing _unit_ after _x_ in _unitDisplay_ form, which may depend on _x_ in languages having different plural forms.
+            1. Append the Record { [[Type]]: *"unit"*, [[Value]]: _mu_ } to _result_.
+          1. Else if _p_ is *"currencyCode"* and _numberFormat_.[[Style]] is *"currency"*, then
+            1. Let _currency_ be _numberFormat_.[[Currency]].
+            1. Let _cd_ be _currency_.
+            1. Append the Record { [[Type]]: *"currency"*, [[Value]]: _cd_ } to _result_.
+          1. Else if _p_ is *"currencyPrefix"* and _numberFormat_.[[Style]] is *"currency"*, then
+            1. Let _currency_ be _numberFormat_.[[Currency]].
+            1. Let _currencyDisplay_ be _numberFormat_.[[CurrencyDisplay]].
+            1. Let _cd_ be an ILD String value representing _currency_ before _x_ in _currencyDisplay_ form, which may depend on _x_ in languages having different plural forms.
+            1. Append the Record { [[Type]]: *"currency"*, [[Value]]: _cd_ } to _result_.
+          1. Else if _p_ is *"currencySuffix"* and _numberFormat_.[[Style]] is *"currency"*, then
+            1. Let _currency_ be _numberFormat_.[[Currency]].
+            1. Let _currencyDisplay_ be _numberFormat_.[[CurrencyDisplay]].
+            1. Let _cd_ be an ILD String value representing _currency_ after _x_ in _currencyDisplay_ form, which may depend on _x_ in languages having different plural forms. If the implementation does not have such a representation of _currency_, use _currency_ itself.
+            1. Append the Record { [[Type]]: *"currency"*, [[Value]]: _cd_ } to _result_.
+          1. Else,
+            1. Let _unknown_ be an ILND String based on _x_ and _p_.
+            1. Append the Record { [[Type]]: *"unknown"*, [[Value]]: _unknown_ } to _result_.
+        1. Return _result_.
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-getnumberformatpattern" type="abstract operation">
+      <h1>
+        GetNumberFormatPattern (
+          _numberFormat_: an Intl.NumberFormat,
+          _x_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): a String
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>
+          It considers the resolved unit-related options in the number format object along with the final scaled and rounded number being formatted (an Intl mathematical value) and returns a pattern, a String value as described in <emu-xref href="#sec-intl.numberformat-internal-slots"></emu-xref>. <ins>_unit_ must not be *undefined* if the style is *"unit"* or *"currency"*, and it must be *undefined* otherwise.</ins>
+        </dd>
+      </dl>
+      <emu-alg>
+        1. Let _resolvedLocaleData_ be _numberFormat_.[[LocaleData]].
+        1. Let _patterns_ be _resolvedLocaleData_.[[patterns]].
+        1. Assert: _patterns_ is a Record (see <emu-xref href="#sec-intl.numberformat-internal-slots"></emu-xref>).
+        1. Let _style_ be _numberFormat_.[[Style]].
+        1. If _style_ is *"percent"*, then
+          1. Set _patterns_ to _patterns_.[[percent]].
+        1. Else if _style_ is *"unit"*, then
+          1. <ins>Assert: _unit_ is not *undefined*.</ins>
+          1. Let _unitDisplay_ be _numberFormat_.[[UnitDisplay]].
+          1. Set _patterns_ to _patterns_.[[unit]].
+          1. If _patterns_ doesn't have a field [[&lt;_unit_>]], then
+            1. Set _unit_ to *"fallback"*.
+          1. Set _patterns_ to _patterns_.[[&lt;_unit_>]].
+          1. Set _patterns_ to _patterns_.[[&lt;_unitDisplay_>]].
+        1. Else if _style_ is *"currency"*, then
+          1. <ins>Assert: _unit_ is not *undefined*.</ins>
+          1. <ins>Let _currency_ be _unit_.</ins>
+          1. Let _currencyDisplay_ be _numberFormat_.[[CurrencyDisplay]].
+          1. Let _currencySign_ be _numberFormat_.[[CurrencySign]].
+          1. Set _patterns_ to _patterns_.[[currency]].
+          1. If _patterns_ doesn't have a field [[&lt;_currency_>]], then
+            1. Set _currency_ to *"fallback"*.
+          1. Set _patterns_ to _patterns_.[[&lt;_currency_>]].
+          1. Set _patterns_ to _patterns_.[[&lt;_currencyDisplay_>]].
+          1. Set _patterns_ to _patterns_.[[&lt;_currencySign_>]].
+        1. Else,
+          1. Assert: _style_ is *"decimal"*.
+          1. <ins>Assert: _unit_ is *undefined*.</ins>
+          1. Set _patterns_ to _patterns_.[[decimal]].
+        1. If _x_ is ~negative-infinity~, then
+          1. Let _category_ be ~negative-non-zero~.
+        1. Else if _x_ is ~negative-zero~, then
+          1. Let _category_ be ~negative-zero~.
+        1. Else if _x_ is ~not-a-number~, then
+          1. Let _category_ be ~positive-zero~.
+        1. Else if _x_ is ~positive-infinity~, then
+          1. Let _category_ be ~positive-non-zero~.
+        1. Else,
+          1. Assert: _x_ is a mathematical value.
+          1. If _x_ &lt; 0, then
+            1. Let _category_ be ~negative-non-zero~.
+          1. Else if _x_ > 0, then
+            1. Let _category_ be ~positive-non-zero~.
+          1. Else,
+            1. Let _category_ be ~positive-zero~.
+        1. Let _signDisplay_ be _numberFormat_.[[SignDisplay]].
+        1. If _signDisplay_ is *"never"*, then
+          1. Let _pattern_ be _patterns_.[[zeroPattern]].
+        1. Else if _signDisplay_ is *"auto"*, then
+          1. If _category_ is ~positive-non-zero~ or ~positive-zero~, then
+            1. Let _pattern_ be _patterns_.[[zeroPattern]].
+          1. Else,
+            1. Let _pattern_ be _patterns_.[[negativePattern]].
+        1. Else if _signDisplay_ is *"always"*, then
+          1. If _category_ is ~positive-non-zero~ or ~positive-zero~, then
+            1. Let _pattern_ be _patterns_.[[positivePattern]].
+          1. Else,
+            1. Let _pattern_ be _patterns_.[[negativePattern]].
+        1. Else if _signDisplay_ is *"exceptZero"*, then
+          1. If _category_ is ~positive-zero~ or ~negative-zero~, then
+            1. Let _pattern_ be _patterns_.[[zeroPattern]].
+          1. Else if _category_ is ~positive-non-zero~, then
+            1. Let _pattern_ be _patterns_.[[positivePattern]].
+          1. Else,
+            1. Let _pattern_ be _patterns_.[[negativePattern]].
+        1. Else,
+          1. Assert: _signDisplay_ is *"negative"*.
+          1. If _category_ is ~negative-non-zero~, then
+            1. Let _pattern_ be _patterns_.[[negativePattern]].
+          1. Else,
+            1. Let _pattern_ be _patterns_.[[zeroPattern]].
+        1. Return _pattern_.
+      </emu-alg>
+    </emu-clause>
+
+    <ins class="block">
+    <emu-clause id="sec-getnumberformatinput" type="abstract operation">
+      <h1>
+        GetNumberFormatInput (
+          _numberFormat_: an Intl.NumberFormat,
+          _input_: an ECMAScript language value,
+        ): either a normal completion containing a Record with fields [[Value]] (an Intl mathematical value) and [[Unit]] (a String or *undefined*), or a throw completion
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>
+          It reads _input_ as either a primitive or an object containing *"value"* and *"unit"* fields.
+        </dd>
+      </dl>
+      <emu-alg>
+        1. If _input_ is an Object, then
+          1. Let _value_ be ? Get(_input_, *"value"*).
+          1. Let _inputUnit_ be ? GetOption(_input_, *"unit"*, ~string~, ~empty~, *undefined*).
+        1. Else,
+          1. Let _value_ be _input_.
+          1. Let _inputUnit_ be *undefined*.
+        1. Let _intlMV_ be ? ToIntlMathematicalValue(_value_).
+        1. If _numberFormat_.[[Style]] is *"unit"*, then
+          1. Let _formatterUnit_ be _numberFormat_.[[Unit]].
+          1. If _inputUnit_ is *undefined* and _formatterUnit_ is *undefined*, then
+            1. Throw a *TypeError* exception.
+          1. Else if _inputUnit_ is *undefined*, then
+            1. Assert: IsWellFormedUnitIdentifier(_formatterUnit_) is *true*.
+            1. Let _resolvedUnit_ be _formatterUnit_.
+          1. Else if _formatterUnit_ is *undefined*, then
+            1. If IsWellFormedUnitIdentifier(_inputUnit_) is *false*, throw a *RangeError* exception.
+            1. Let _resolvedUnit_ be _inputUnit_.
+          1. Else,
+            1. If SameValueNonNumber(_formatterUnit_, _inputUnit_) is *false*, throw a *RangeError* exception.
+            1. Let _resolvedUnit_ be _inputUnit_.
+        1. Else if _numberFormat_.[[Style]] is *"currency"*, then
+          1. Let _formatterUnit_ be _numberFormat_.[[Unit]].
+          1. If _inputUnit_ is *undefined* and _formatterUnit_ is *undefined*, then
+            1. Throw a *TypeError* exception.
+          1. Else if _inputUnit_ is *undefined*, then
+            1. Assert: IsWellFormedCurrencyCode(_formatterUnit_) is *true*.
+            1. Let _resolvedUnit_ be _formatterUnit_.
+          1. Else if _formatterUnit_ is *undefined*, then
+            1. If IsWellFormedCurrencyCode(_inputUnit_) is *false*, throw a *RangeError* exception.
+            1. Let _resolvedUnit_ be _inputUnit_.
+          1. Else,
+            1. If SameValueNonNumber(_formatterUnit_, _inputUnit_) is *false*, throw a *RangeError* exception.
+            1. Let _resolvedUnit_ be _inputUnit_.
+          1. Set _resolvedUnit_ to the ASCII-uppercase of _resolvedUnit_.
+        1. Else,
+          1. If _inputUnit_ is not *undefined*, throw a *TypeError* exception.
+        1. Return the Record { [[Value]]: _intlMV_, [[Unit]]: _resolvedUnit_ }.
+      </emu-alg>
+    </emu-clause>
+    </ins>
+
+    <emu-clause id="sec-setnumberformatunitoptions" type="abstract operation">
+      <h1>
+        SetNumberFormatUnitOptions (
+          _intlObj_: an Intl.NumberFormat,
+          _options_: an Object,
+        ): either a normal completion containing ~unused~ or a throw completion
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It resolves the user-specified options relating to units onto _intlObj_.</dd>
+      </dl>
+      <emu-alg>
+        1. Let _style_ be ? GetOption(_options_, *"style"*, ~string~, « *"decimal"*, *"percent"*, *"currency"*, *"unit"* », *"decimal"*).
+        1. Set _intlObj_.[[Style]] to _style_.
+        1. Let _currency_ be ? GetOption(_options_, *"currency"*, ~string~, ~empty~, *undefined*).
+        1. <del>If _currency_ is *undefined*, then</del>
+          1. <del>If _style_ is *"currency"*, throw a *TypeError* exception.</del>
+        1. <del>Else,</del>
+          1. <del>If IsWellFormedCurrencyCode(_currency_) is *false*, throw a *RangeError* exception.</del>
+        1. <ins>If _currency_ is not *undefined* and IsWellFormedCurrencyCode(_currency_) is *false*, throw a *RangeError* exception.</ins>
+        1. Let _currencyDisplay_ be ? GetOption(_options_, *"currencyDisplay"*, ~string~, « *"code"*, *"symbol"*, *"narrowSymbol"*, *"name"* », *"symbol"*).
+        1. Let _currencySign_ be ? GetOption(_options_, *"currencySign"*, ~string~, « *"standard"*, *"accounting"* », *"standard"*).
+        1. Let _unit_ be ? GetOption(_options_, *"unit"*, ~string~, ~empty~, *undefined*).
+        1. <del>If _unit_ is *undefined*, then</del>
+          1. <del>If _style_ is *"unit"*, throw a *TypeError* exception.</del>
+        1. <del>Else,</del>
+          1. <del>If IsWellFormedUnitIdentifier(_unit_) is *false*, throw a *RangeError* exception.</del>
+        1. <ins>If _unit_ is not *undefined* and IsWellFormedUnitIdentifier(_unit_) is *false*, throw a *RangeError* exception.</ins>
+        1. Let _unitDisplay_ be ? GetOption(_options_, *"unitDisplay"*, ~string~, « *"short"*, *"narrow"*, *"long"* », *"short"*).
+        1. If _style_ is *"currency"*, then
+          1. Set _intlObj_.[[Currency]] to <del>the ASCII-uppercase of</del> _currency_.
+          1. Set _intlObj_.[[CurrencyDisplay]] to _currencyDisplay_.
+          1. Set _intlObj_.[[CurrencySign]] to _currencySign_.
+        1. If _style_ is *"unit"*, then
+          1. Set _intlObj_.[[Unit]] to _unit_.
+          1. Set _intlObj_.[[UnitDisplay]] to _unitDisplay_.
+        1. Return ~unused~.
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-partitionnumberrangepattern" type="abstract operation">
+      <h1>
+        PartitionNumberRangePattern (
+          _numberFormat_: an Intl.NumberFormat,
+          _x_: an Intl mathematical value,
+          _y_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): either a normal completion containing a List of Records with fields [[Type]] (a String), [[Value]] (a String), and [[Source]] (a String), or a throw completion
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It creates the parts for a localized number range according to _x_, _y_, and the formatting options of _numberFormat_.</dd>
+      </dl>
+      <emu-alg>
+        1. If _x_ is ~not-a-number~ or _y_ is ~not-a-number~, throw a *RangeError* exception.
+        1. Let _xResult_ be PartitionNumberPattern(_numberFormat_, _x_ <ins>, _unit_</ins>).
+        1. Let _yResult_ be PartitionNumberPattern(_numberFormat_, _y_ <ins>, _unit_</ins>).
+        1. If FormatNumeric(_numberFormat_, _x_ <ins>, _unit_</ins>) is FormatNumeric(_numberFormat_, _y_ <ins>, _unit_</ins>), then
+          1. Let _appxResult_ be FormatApproximately(_numberFormat_, _xResult_).
+          1. For each element _r_ of _appxResult_, do
+            1. Set _r_.[[Source]] to *"shared"*.
+          1. Return _appxResult_.
+        1. Let _result_ be a new empty List.
+        1. For each element _r_ of _xResult_, do
+          1. Append the Record { [[Type]]: _r_.[[Type]], [[Value]]: _r_.[[Value]], [[Source]]: *"startRange"* } to _result_.
+        1. Let _rangeSeparator_ be an ILND String value used to separate two numbers.
+        1. Append the Record { [[Type]]: *"literal"*, [[Value]]: _rangeSeparator_, [[Source]]: *"shared"* } to _result_.
+        1. For each element _r_ of _yResult_, do
+          1. Append the Record { [[Type]]: _r_.[[Type]], [[Value]]: _r_.[[Value]], [[Source]]: *"endRange"* } to _result_.
+        1. Return CollapseNumberRange(_numberFormat_, _result_).
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-formatnumericrange" type="abstract operation">
+      <h1>
+        FormatNumericRange (
+          _numberFormat_: an Intl.NumberFormat,
+          _x_: an Intl mathematical value,
+          _y_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): either a normal completion containing a String or a throw completion
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd></dd>
+      </dl>
+      <emu-alg>
+        1. Let _parts_ be ? PartitionNumberRangePattern(_numberFormat_, _x_, _y_ <ins>, _unit_</ins>).
+        1. Let _result_ be the empty String.
+        1. For each element _part_ of _parts_, do
+          1. Set _result_ to the string-concatenation of _result_ and _part_.[[Value]].
+        1. Return _result_.
+      </emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-formatnumericrangetoparts" type="abstract operation">
+      <h1>
+        FormatNumericRangeToParts (
+          _numberFormat_: an Intl.NumberFormat,
+          _x_: an Intl mathematical value,
+          _y_: an Intl mathematical value,
+          <ins>_unit_: a String or *undefined*,</ins>
+        ): either a normal completion containing an Array or a throw completion
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd></dd>
+      </dl>
+      <emu-alg>
+        1. Let _parts_ be ? PartitionNumberRangePattern(_numberFormat_, _x_, _y_ <ins>, _unit_</ins>).
+        1. Let _result_ be ! ArrayCreate(0).
+        1. Let _n_ be 0.
+        1. For each element _part_ of _parts_, do
+          1. Let _O_ be OrdinaryObjectCreate(%Object.prototype%).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"type"*, _part_.[[Type]]).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"value"*, _part_.[[Value]]).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"source"*, _part_.[[Source]]).
+          1. Perform ! CreateDataPropertyOrThrow(_result_, ! ToString(𝔽(_n_)), _O_).
+          1. Increment _n_ by 1.
+        1. Return _result_.
+      </emu-alg>
+    </emu-clause>
+  </emu-clause>
 </emu-clause>

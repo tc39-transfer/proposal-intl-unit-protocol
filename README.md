@@ -98,6 +98,20 @@ let result = formatter.format({
 });
 ```
 
+### Protocol does not require a unit
+
+The protocol accepts objects with a `value` getter even if their `unit` getter returns `undefined`:
+
+```javascript
+let formatter = new Intl.NumberFormat(locale, {
+    style: "unit",
+    unit,
+});
+let result = formatter.format({
+    value,
+});
+```
+
 ### Conflicting Units
 
 If the constructor has a unit and the unit is not the same as the one in the protocol, an exception will be thrown, since this is a programmer error.
@@ -107,17 +121,48 @@ new Intl.NumberFormat("en", {
     style: "unit",
     unit: "meter",
 }).format({
-    number: 1234,
+    value: 1234,
     unit: "kilometer",
 }) // throws a RangeError
 ```
 
 When the Amount proposal advances, this can be changed to automatically convert the input unit to the formatter unit.
 
+### Unit not allowed if style is not "unit" or "currency"
+
+If a `unit` is set in the protocol, but the formatter was _not_ configured with style "unit" or "currency", an error will occur.
+
+This helps implementations know that they need to load unit or currency data in the constructor, partially mitigating the "construction vs formatting" impact discussed above.
+
+```javascript
+let formatter = new Intl.NumberFormat(locale);
+let result = formatter.format({
+    value,
+    unit,
+}) // throws a TypeError
+```
+
+### Range Formatting
+
+Currently, formatting a range requires the units to be equal. This restriction may be relaxed in the future.
+
+```javascript
+new Intl.NumberFormat("en", {
+    style: "unit",
+    unit: "meter",
+}).formatRange({
+    value: 1000,
+    // if `unit` is not specified, the constructor unit is used
+}, {
+    value: 2000,
+    unit: "meter",
+}) // "1000-2000 meters"
+```
+
 ## Integration with Future Proposals
 
 The Amount proposal seeks to add a primordial encapsulating a numeric type with a unit. It will implement the Intl protocol specified here.
 
-The Decimal proposal seeks to add a primordial that represents a decimal number in a form designed for correct and efficient arithmetic. It will likely be supported as another number type for the `number` field in the protocol.
+The Decimal proposal seeks to add a primordial that represents a decimal number in a form designed for correct and efficient arithmetic. It will likely be supported as another number type for the `value` field in the protocol.
 
 Other fields could be added to this protocol in the future, such as alternative ways of expressing precision or an override to the number of significant digits specified in the constructor.
