@@ -9,6 +9,8 @@ Slides:
 - [Ask for Stage 1 @ 111th Meeting of TC39](https://docs.google.com/presentation/d/15gvLA5clt7f6nconED64JzFKi7D-buCyOjQSmKuhEFY/edit)
 - [Ask for Stage 2 @ 113th Meeting of TC39](https://docs.google.com/presentation/d/1ECuRD0MU6-Z5DzBJaOi5W3u7f2kf_PZYZU9cXjg5Ock/edit)
 
+Draft Spec: https://tc39.es/proposal-intl-unit-protocol/
+
 ## Background
 
 The i18n community has converged on the principle that a number ought to be annotated with the quantity it is measuring. Unlike the localized decimal separators, numbering systems for digits, and grouping strategy, the unit is a core part of the data model to be formatted, not a style that gets applied by the formatter.
